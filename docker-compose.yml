@@ -1,0 +1,32 @@
+# ============================================================
+# DevPulse — Development Docker Compose
+# Runs ONLY infrastructure (postgres + redis).
+# Start the 3 app services locally:
+#   Terminal 1: cd backend  && npm run dev
+#   Terminal 2: cd ai-service && python -m uvicorn app.main:app --reload --port 8000
+#   Terminal 3: cd frontend && npm run dev  →  http://localhost:5173
+# ============================================================
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: devpulse-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: devpulse
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: devpulse-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
+

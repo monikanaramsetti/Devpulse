@@ -1,0 +1,92 @@
+name: DevPulse CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  backend-test-and-build:
+    name: Backend CI (Node.js + Prisma)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Generate Prisma Client
+        run: |
+          cd backend
+          npx prisma generate
+
+      - name: Run Backend Tests
+        run: |
+          cd backend
+          npm test --if-present
+
+      - name: Build TypeScript Output
+        run: |
+          cd backend
+          npm run build
+
+  frontend-build:
+    name: Frontend CI (React + Vite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Typecheck and Lint
+        run: |
+          cd frontend
+          npm run lint
+
+      - name: Build Vite Bundle
+        run: |
+          cd frontend
+          npm run build
+
+  ai-service-test:
+    name: AI Service CI (Python FastAPI)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: ai-service/requirements.txt
+
+      - name: Install Python Dependencies
+        run: |
+          cd ai-service
+          pip install -r requirements.txt
+
+      - name: Run Pytest Diagnostic Suite
+        run: |
+          cd ai-service
+          pytest

@@ -1,0 +1,6 @@
+Monika Naramsetti!
+This is a sample text file.
+It contains vowels, spaces, symbols, and numbers: 456.
+How many lines, characters, and symbols will your script find?
+Let's test it with some punctuation: ! @ # $ % ^ & * ( )
+End of file.

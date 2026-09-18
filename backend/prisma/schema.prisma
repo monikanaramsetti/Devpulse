@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         String    @default("USER") // USER or ADMIN
+  projects     Project[]
+  createdAt    DateTime  @default(now())
+}
+
+model Project {
+  id            String   @id @default(uuid())
+  name          String
+  repositoryUrl String
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  builds        Build[]
+  createdAt     DateTime @default(now())
+}
+
+model Build {
+  id         String    @id @default(uuid())
+  projectId  String
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  commitHash String
+  branch     String
+  status     String    // PENDING, RUNNING, SUCCESS, FAILED
+  logs       String
+  duration   Int       @default(0) // duration in seconds
+  analysis   Analysis?
+  createdAt  DateTime  @default(now())
+}
+
+model Analysis {
+  id           String   @id @default(uuid())
+  buildId      String   @unique
+  build        Build    @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  rootCause    String
+  explanation  String
+  affectedArea String
+  suggestedFix String
+  confidence   String   @default("Medium") // High, Medium, Low
+  limitations  String
+  createdAt    DateTime @default(now())
+}
