@@ -8,6 +8,14 @@ localBus.setMaxListeners(20);
 let publisher: Redis | null = null;
 let subscriber: Redis | null = null;
 let redisConnected = false;
+let fallbackWarningShown = false;
+
+function useFallbackBus() {
+  if (!fallbackWarningShown) {
+    console.warn('Redis unavailable. Using the internal event bus. Start Redis to enable cross-process events.');
+    fallbackWarningShown = true;
+  }
+}
 
 // Skip Redis entirely during tests to prevent open handle warnings
 if (process.env.NODE_ENV !== 'test') {
@@ -16,7 +24,7 @@ if (process.env.NODE_ENV !== 'test') {
       maxRetriesPerRequest: 1,
       retryStrategy: (times) => {
         if (times > 2) {
-          console.warn('⚠️ Redis not available locally. Falling back to internal event bus.');
+          useFallbackBus();
           return null;
         }
         return 1000;
@@ -46,7 +54,7 @@ if (process.env.NODE_ENV !== 'test') {
       }
     });
   } catch (error) {
-    console.warn('⚠️ Exception initializing Redis clients. Using internal fallback bus.');
+    useFallbackBus();
   }
 }
 
